@@ -1,4 +1,4 @@
-module github.com/ThilinaTLM/quick-doc
+module github.com/pickme-lk/quick-doc
 
 go 1.17
 

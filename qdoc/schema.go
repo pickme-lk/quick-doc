@@ -1,8 +1,8 @@
 package qdoc
 
 import (
-	"github.com/ThilinaTLM/quick-doc/schema"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/pickme-lk/quick-doc/schema"
 )
 
 // Schema is document data scheme configuration

@@ -1,6 +1,6 @@
 package qdoc
 
-import "github.com/ThilinaTLM/quick-doc/ui"
+import "github.com/pickme-lk/quick-doc/ui"
 
 // MethodType Http methods
 type MethodType string
