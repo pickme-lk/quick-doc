@@ -2,7 +2,7 @@ package qdoc
 
 import (
 	"fmt"
-	"github.com/ThilinaTLM/quick-doc/ui"
+	"github.com/pickme-lk/quick-doc/ui"
 	"net/http"
 )
 

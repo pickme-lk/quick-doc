@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/ThilinaTLM/quick-doc/qdoc"
-	"github.com/ThilinaTLM/quick-doc/ui"
+	"github.com/pickme-lk/quick-doc/qdoc"
+	"github.com/pickme-lk/quick-doc/ui"
 	"net/http"
 )
 
