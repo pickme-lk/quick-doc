@@ -63,6 +63,11 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value) (*Property, error) {
 			Type:  PropType_INTEGER,
 			Value: b.valueString(v),
 		}, nil
+	case reflect.Float32, reflect.Float64:
+		return &Property{
+			Type:  PropType_NUMBER,
+			Value: b.valueString(v),
+		}, nil
 	case reflect.Bool:
 		return &Property{
 			Type:  PropType_BOOLEAN,
