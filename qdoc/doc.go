@@ -27,6 +27,7 @@ type UiConfig struct {
 	Path         string
 	DefaultTheme ui.Theme
 	ThemeByQuery bool
+	LogoUrl      string
 }
 
 // Config API Doc configuration

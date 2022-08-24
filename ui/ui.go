@@ -13,6 +13,7 @@ type Config struct {
 	Theme   Theme
 	Title   string
 	SpecUrl string
+	LogoUrl string
 }
 
 func (c *Config) Validate() error {

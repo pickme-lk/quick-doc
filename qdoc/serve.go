@@ -66,6 +66,7 @@ func (cd *CompiledDoc) ServeMux() *http.ServeMux {
 					Theme:   theme,
 					Title:   cd.config.Title,
 					SpecUrl: cd.config.SpecPath,
+					LogoUrl: cd.config.UiConfig.LogoUrl,
 				})
 				if err != nil {
 					panic(err)
@@ -79,6 +80,7 @@ func (cd *CompiledDoc) ServeMux() *http.ServeMux {
 				Theme:   cd.config.UiConfig.DefaultTheme,
 				Title:   cd.config.Title,
 				SpecUrl: cd.config.SpecPath,
+				LogoUrl: cd.config.UiConfig.LogoUrl,
 			})
 			if err != nil {
 				panic(err)

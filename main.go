@@ -39,6 +39,7 @@ func Doc() {
 			Path:         "/doc/ui",
 			DefaultTheme: ui.SWAGGER_UI,
 			ThemeByQuery: false,
+			LogoUrl:      "https://cdn.dev-mytaxi.com/delivery/api-doc/src_assets_img_pickme-logo.svg",
 		},
 	})
 

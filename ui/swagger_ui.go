@@ -34,8 +34,23 @@ func SwaggerUiHTML(config Config) string {
 							layout: "StandaloneLayout"
 						  })
 						}
+					
+					function addLogo() {
+						const elems = document.getElementsByClassName('information-container wrapper');
+						if (elems && elems.length > 0) {
+							elems[0].insertAdjacentHTML("afterbegin",'<div><img src="%s" style="margin-top:24px; margin-bottom:-36px; width:200px"></div>');
+							return true;
+						}
+						return false;
+					}
+					function addLogoInterval() {
+						if (!addLogo()) {
+							setTimeout(addLogoInterval, 10);
+						}
+					}
+					addLogoInterval();
 					</script>
 				</body>
 				</html>
-			`, config.Title, config.SpecUrl)
+			`, config.Title, config.SpecUrl, config.LogoUrl)
 }
