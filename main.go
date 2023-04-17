@@ -7,18 +7,6 @@ import (
 	"net/http"
 )
 
-type Team struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-}
-
-type User struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Age      int    `json:"age"`
-	Team     string `json:"team"`
-}
-
 func main() {
 	Doc()
 }
@@ -116,28 +104,27 @@ func Doc() {
 			qdoc.RequiredParam("team id", doc.Schema(0)), // 0 is int type and example value will be 0
 		),
 		RespSet: qdoc.RespSet{
-			Success: qdoc.ResJson("Team found", doc.Schema(struct {
-				Team  Team   `json:"team"`
-				Users []User `json:"users"`
-			}{
-				Team: Team{
-					Name:        "testteam1",
-					Description: "test team 1",
-				},
-				Users: []User{
-					{
-						Username: "testuser1",
-						Password: "123456",
-						Age:      24,
-						Team:     "testteam1",
-					},
-				},
-			})), // schema and example will be generated
+			Success:  qdoc.ResJson("Team found", doc.Schema(Team{})), // schema and example will be generated
 			NotFound: qdoc.ResJson("Team not found", nil),
 			ISE:      qdoc.ResJson("Internal server error", nil),
 		},
 	}).Tag("Team").WithBearerAuth() // Add bearer token authentication requirement
 
+	doc.Get(&qdoc.Endpoint{
+		Summary: "Get a Option",
+		Desc:    "Get a Option Endpoint",
+		Path:    "/item/option/{option}",
+		PathParams: qdoc.PathParams(
+			qdoc.RequiredParam("option", doc.Schema(nil)),
+		),
+		Headers: qdoc.Headers(
+			qdoc.OptionalParam("type", doc.Schema(nil)),
+		),
+		RespSet: qdoc.RespSet{
+			Success: qdoc.ResJson("Success", doc.Schema(OptionGetResponse{})),
+			ISE:     qdoc.ResJson("Internal Server Error", nil),
+		},
+	}).WithBearerAuth().Tag("items")
 	// Compile the doc config
 	cd, err := doc.Compile()
 	if err != nil {
@@ -151,4 +138,53 @@ func Doc() {
 	if err != nil {
 		return
 	}
+
+}
+
+type OptionGetResponse struct {
+	Payload struct {
+		Id       int64        `json:"id"`
+		SellerId int64        `json:"sellerId"`
+		Data     OptionDetail `json:"data"`
+	} `json:"payload"`
+}
+
+type OptionDetail struct {
+	Id       int64  `json:"id"`
+	Name     string `json:"name"`
+	SellerId int64  `json:"sellerId"`
+	Required bool   `json:"required"`
+	Quantity int64  `json:"quantity"`
+	Items    Items  `json:"items"`
+}
+
+type Items struct {
+	Added     []Item `json:"added"`
+	Available []Item `json:"available"`
+}
+type Item struct {
+	Id           int64          `json:"id"`
+	Name         string         `json:"name"`
+	CurrencyCode string         `json:"currencyCode"`
+	Price        float64        `json:"price"`
+	Options      []OptionInItem `json:"options"`
+}
+
+type OptionInItem struct {
+	Id    int64  `json:"id"`
+	Name  string `json:"name"`
+	Order int    `json:"order"`
+	Items []Item `json:"items"`
+}
+
+type Team struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Age      int    `json:"age"`
+	Team     string `json:"team"`
 }
