@@ -27,7 +27,6 @@ func Doc() {
 			Path:         "/doc/ui",
 			DefaultTheme: ui.SWAGGER_UI,
 			ThemeByQuery: false,
-			LogoUrl:      "https://cdn.dev-mytaxi.com/delivery/api-doc/src_assets_img_pickme-logo.svg",
 		},
 	})
 
@@ -104,7 +103,7 @@ func Doc() {
 			qdoc.RequiredParam("team id", doc.Schema(0)), // 0 is int type and example value will be 0
 		),
 		RespSet: qdoc.RespSet{
-			Success:  qdoc.ResJson("Team found", doc.Schema(Team{})), // schema and example will be generated
+			Success:  qdoc.ResJson("Team found", doc.Schema(test{})), // schema and example will be generated
 			NotFound: qdoc.ResJson("Team not found", nil),
 			ISE:      qdoc.ResJson("Internal server error", nil),
 		},
@@ -113,7 +112,7 @@ func Doc() {
 	doc.Get(&qdoc.Endpoint{
 		Summary: "Get a Option",
 		Desc:    "Get a Option Endpoint",
-		Path:    "/item/option/{option}",
+		Path:    "/v1.0/sku/option/{option}",
 		PathParams: qdoc.PathParams(
 			qdoc.RequiredParam("option", doc.Schema(nil)),
 		),
@@ -121,10 +120,44 @@ func Doc() {
 			qdoc.OptionalParam("type", doc.Schema(nil)),
 		),
 		RespSet: qdoc.RespSet{
-			Success: qdoc.ResJson("Success", doc.Schema(OptionGetResponse{})),
-			ISE:     qdoc.ResJson("Internal Server Error", nil),
+			Success: qdoc.ResJson("Success", doc.Schema(OptionGetResponse{
+				Payload: struct {
+					Id         int64        `json:"id"`
+					MerchantId int64        `json:"merchantId"`
+					Data       OptionDetail `json:"data"`
+				}{
+					MerchantId: 1,
+					Id:         1,
+					Data: OptionDetail{
+						Id:         1,
+						Name:       "name",
+						Label:      "label",
+						Note:       "note",
+						MerchantId: 1,
+						Required:   true,
+						Selection:  1,
+						Minimum:    1,
+						Maximum:    1,
+						Quantity:   1,
+						Skus: struct {
+							Added     []Sku `json:"added"`
+							Available []Sku `json:"available"`
+						}{Added: []Sku{{
+							Id:              1,
+							Name:            "name",
+							CurrencyCode:    "currencyCode",
+							Price:           2.36,
+							IsOriginalPrice: true,
+							MerchantStatus:  5,
+							Order:           5,
+							Options:         []OptionInSku{},
+						}}, Available: []Sku{}},
+					},
+				},
+			})),
+			ISE: qdoc.ResJson("Internal Server Error", nil),
 		},
-	}).WithBearerAuth().Tag("items")
+	}).WithBearerAuth().Tag("SKUs")
 	// Compile the doc config
 	cd, err := doc.Compile()
 	if err != nil {
@@ -138,43 +171,57 @@ func Doc() {
 	if err != nil {
 		return
 	}
+}
 
+type test struct {
+	//name string `json:"name"`
+	names []test2 `json:"names"`
+}
+
+type test2 struct {
+	name2 string `json:"name_2"`
 }
 
 type OptionGetResponse struct {
 	Payload struct {
-		Id       int64        `json:"id"`
-		SellerId int64        `json:"sellerId"`
-		Data     OptionDetail `json:"data"`
+		Id         int64        `json:"id"`
+		MerchantId int64        `json:"merchantId"`
+		Data       OptionDetail `json:"data"`
 	} `json:"payload"`
 }
 
 type OptionDetail struct {
-	Id       int64  `json:"id"`
-	Name     string `json:"name"`
-	SellerId int64  `json:"sellerId"`
-	Required bool   `json:"required"`
-	Quantity int64  `json:"quantity"`
-	Items    Items  `json:"items"`
+	Id         int64  `json:"id"`
+	Name       string `json:"name"`
+	Label      string `json:"label"`
+	Note       string `json:"note"`
+	MerchantId int64  `json:"merchantId"`
+	Required   bool   `json:"required"`
+	Selection  int8   `json:"selection"`
+	Minimum    int64  `json:"minimum"`
+	Maximum    int64  `json:"maximum"`
+	Quantity   int64  `json:"quantity"`
+	Skus       struct {
+		Added     []Sku `json:"added"`
+		Available []Sku `json:"available"`
+	} `json:"skus"`
+}
+type Sku struct {
+	Id              int64         `json:"id"`
+	Name            string        `json:"name"`
+	CurrencyCode    string        `json:"currencyCode"`
+	Price           float64       `json:"price"`
+	IsOriginalPrice bool          `json:"is_original_price"`
+	MerchantStatus  int           `json:"merchantStatus"`
+	Order           int           `json:"order"`
+	Options         []OptionInSku `json:"options"`
 }
 
-type Items struct {
-	Added     []Item `json:"added"`
-	Available []Item `json:"available"`
-}
-type Item struct {
-	Id           int64          `json:"id"`
-	Name         string         `json:"name"`
-	CurrencyCode string         `json:"currencyCode"`
-	Price        float64        `json:"price"`
-	Options      []OptionInItem `json:"options"`
-}
-
-type OptionInItem struct {
+type OptionInSku struct {
 	Id    int64  `json:"id"`
 	Name  string `json:"name"`
 	Order int    `json:"order"`
-	Items []Item `json:"items"`
+	Skus  []Sku  `json:"skus"`
 }
 
 type Team struct {

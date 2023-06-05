@@ -36,23 +36,22 @@ func (b *Builder) GetSchema(obj interface{}) (*Property, error) {
 	}
 	t := reflect.TypeOf(obj)
 	v := reflect.ValueOf(obj)
-	visited := make(map[string][][]int)
-	currentPath := []int{1}
-	return b.inspect(t, v, visited, currentPath)
+
+	return b.inspect(t, v)
 }
 
-func (b *Builder) inspect(t reflect.Type, v reflect.Value, visited map[string][][]int, currentPath []int) (*Property, error) {
+func (b *Builder) inspect(t reflect.Type, v reflect.Value) (*Property, error) {
 	switch t.Kind() {
 	case reflect.Interface:
 		if v.Interface() == nil {
 			return nil, nil
 		}
-		return b.inspect(v.Elem().Type(), v.Elem(), visited, currentPath)
+		return b.inspect(v.Elem().Type(), v.Elem())
 	case reflect.Ptr:
 		if !v.IsValid() {
-			return b.inspect(t.Elem(), reflect.Value{}, visited, currentPath)
+			return b.inspect(t.Elem(), reflect.Value{})
 		}
-		return b.inspect(t.Elem(), v.Elem(), visited, currentPath)
+		return b.inspect(t.Elem(), v.Elem())
 	case reflect.String:
 		return &Property{
 			Type:  PropType_STRING,
@@ -64,11 +63,6 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value, visited map[string][]
 			Type:  PropType_INTEGER,
 			Value: b.valueString(v),
 		}, nil
-	case reflect.Float32, reflect.Float64:
-		return &Property{
-			Type:  PropType_NUMBER,
-			Value: b.valueString(v),
-		}, nil
 	case reflect.Bool:
 		return &Property{
 			Type:  PropType_BOOLEAN,
@@ -76,37 +70,12 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value, visited map[string][]
 		}, nil
 	case reflect.Struct:
 		if !v.IsValid() && !b.Options.ExploreNilStruct {
-			return nil, nil
-		}
-		structType := t.String()
-		props := make([]Property, 0)
-		var err error
-		visitedPath := (visited)[structType]
-		if visitedPath == nil || len(visitedPath) == 0 {
-			(visited)[structType] = [][]int{currentPath}
-			props, err = b.inspectStruct(t, v, visited, currentPath)
-			if err != nil {
-				return nil, err
-			}
 			return &Property{
-				Type:       PropType_OBJECT,
-				Properties: props,
+				Type:  PropType_STRUCT,
+				Value: "",
 			}, nil
-		} else {
-			for _, v := range visitedPath {
-				prefixCandidate := currentPath[0:len(v)]
-				if reflect.DeepEqual(prefixCandidate, v) {
-					//stopping the further exploration when a cyclic dependency is found in the tree branch
-					return &Property{
-						Type:       PropType_OBJECT,
-						Properties: props,
-					}, nil
-				}
-			}
 		}
-		visitedPath = append(visitedPath, currentPath)
-		(visited)[structType] = visitedPath
-		props, err = b.inspectStruct(t, v, visited, currentPath)
+		props, err := b.inspectStruct(t, v)
 		if err != nil {
 			return nil, err
 		}
@@ -116,17 +85,15 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value, visited map[string][]
 		}, nil
 	case reflect.Slice:
 		props := make([]Property, 0)
-		if !v.IsValid() || v.Len() == 0 {
-			prop, err := b.inspect(t.Elem(), reflect.Value{}, visited, currentPath)
+		if v.Len() == 0 {
+			prop, err := b.inspect(t.Elem(), reflect.Value{})
 			if err != nil {
 				return nil, err
 			}
-			if prop != nil {
-				props = append(props, *prop)
-			}
+			props = append(props, *prop)
 		} else {
 			for i := 0; i < v.Len(); i++ {
-				prop, err := b.inspect(t.Elem(), v.Index(i), visited, currentPath)
+				prop, err := b.inspect(t.Elem(), v.Index(i))
 				if err != nil {
 					return nil, err
 				}
@@ -137,6 +104,11 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value, visited map[string][]
 			Type:       PropType_ARRAY,
 			Properties: props,
 		}, nil
+	case reflect.Float64:
+		return &Property{
+			Type:  PropType_NUMBER,
+			Value: b.valueString(v),
+		}, nil
 	case reflect.Map:
 		panic("not implemented")
 	default:
@@ -144,13 +116,9 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value, visited map[string][]
 	}
 }
 
-func (b *Builder) inspectStruct(t reflect.Type, v reflect.Value, visited map[string][][]int, currentPath []int) ([]Property, error) {
+func (b *Builder) inspectStruct(t reflect.Type, v reflect.Value) ([]Property, error) {
 	props := make([]Property, 0)
 	for i := 0; i < t.NumField(); i++ {
-		nextPath := make([]int, len(currentPath))
-		copy(nextPath, currentPath)
-		nextPath = append(nextPath, i)
-
 		_field := t.Field(i)
 		var _value reflect.Value
 		if v.IsValid() {
@@ -158,7 +126,7 @@ func (b *Builder) inspectStruct(t reflect.Type, v reflect.Value, visited map[str
 		} else {
 			_value = reflect.Value{}
 		}
-		prop, err := b.inspect(_field.Type, _value, visited, nextPath)
+		prop, err := b.inspect(_field.Type, _value)
 		if err != nil {
 			return nil, err
 		}
@@ -184,7 +152,7 @@ func (b *Builder) structFieldName(sf reflect.StructField) string {
 
 func (b *Builder) valueString(v reflect.Value) string {
 	if !v.IsValid() {
-		return ""
+		return "nil"
 	}
 	return fmt.Sprintf("%v", v)
 }
