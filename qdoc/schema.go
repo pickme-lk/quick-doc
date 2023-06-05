@@ -7,11 +7,10 @@ import (
 
 // Schema is document data scheme configuration
 func (d *Doc) Schema(value interface{}) *SchemaConfig {
-	sc := SchemaConfig{}
-	sc = SchemaConfig{
+	sc := SchemaConfig{
 		Object: value,
 		builder: schema.NewBuilder(&schema.Options{
-			ExploreNilStruct: true,
+			ExploreNilStruct: false,
 			PreferJsonTag:    true,
 		}),
 	}
@@ -79,7 +78,6 @@ func propToOpenAPI(prop *schema.Property) *openapi3.Schema {
 			Title:       prop.Name,
 			Description: prop.Description,
 		}
-
 	case schema.PropType_OBJECT:
 		properties := make(map[string]*openapi3.SchemaRef)
 
@@ -93,6 +91,13 @@ func propToOpenAPI(prop *schema.Property) *openapi3.Schema {
 			Properties:  properties,
 			Title:       prop.Name,
 			Description: prop.Description,
+		}
+	case schema.PropType_STRUCT:
+		return &openapi3.Schema{
+			Type:        "string",
+			Example:     "<Empty data sctructure>",
+			Title:       "<Empty data sctructure>",
+			Description: "<Empty data sctructure>",
 		}
 	default:
 		panic("unknown type")

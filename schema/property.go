@@ -16,6 +16,7 @@ const (
 	PropType_OBJECT  PropType = "OBJECT"
 	PropType_ARRAY   PropType = "ARRAY"
 	PropType_MAP     PropType = "MAP"
+	PropType_STRUCT  PropType = "STRUCT"
 )
 
 // GetPropType returns corresponding PropType of the given reflect.Type
