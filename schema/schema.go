@@ -104,7 +104,7 @@ func (b *Builder) inspect(t reflect.Type, v reflect.Value) (*Property, error) {
 			Type:       PropType_ARRAY,
 			Properties: props,
 		}, nil
-	case reflect.Float64:
+	case reflect.Float64, reflect.Float32:
 		return &Property{
 			Type:  PropType_NUMBER,
 			Value: b.valueString(v),
